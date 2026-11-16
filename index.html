@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2a44">
+<meta name="description" content="App para aprender a hacer inferencias al leer: grado quinto.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Detectives">
+<title>Detectives de la Lectura</title>
+<style>
+:root{--navy:#1f2a44;--amber:#f2b33d;--cream:#f7f1e5;--ink:#22252e;--line:#e3d8c2;--good:#2e8b57;--bad:#c0392b;--soft:#fff4d6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--cream)}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;color:var(--ink);font-size:17px;line-height:1.5;min-height:100vh;-webkit-tap-highlight-color:transparent}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--cream)}
+.screen{padding:12px 16px 90px;display:flex;flex-direction:column;gap:12px}
+.screen.center{text-align:center;align-items:stretch}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--navy);color:#fff;margin:-12px -16px 4px;padding:12px 14px;position:sticky;top:0;z-index:5}
+.top .tt{font-weight:700;font-size:15px;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .pts{font-size:14px;color:var(--amber);font-weight:700;min-width:44px;text-align:right}
+.back{background:transparent;border:none;color:#fff;font-size:24px;width:40px;height:36px;cursor:pointer}
+h1{font-size:28px;line-height:1.15;color:var(--navy);text-align:center}
+h2{font-size:22px;color:var(--navy);line-height:1.2}
+.lead{text-align:center;color:#555}
+.small{font-size:14px;color:#666}.right{text-align:right}
+.welcome{padding-top:28px;gap:14px}
+.logo{font-size:64px;text-align:center}
+.lbl{font-weight:700;font-size:15px;margin-top:4px}
+input{font:inherit;padding:14px;border:2px solid var(--line);border-radius:14px;background:#fff;width:100%}
+input:focus{outline:none;border-color:var(--navy)}
+.avatars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.av{font:inherit;font-size:14px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.av span{font-size:34px}.av.on{border-color:var(--navy);background:var(--soft);box-shadow:0 0 0 3px rgba(242,179,61,.5)}
+.btn{font:inherit;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:16px;padding:15px 18px;cursor:pointer;width:100%;min-height:52px}
+.btn.big{font-size:18px}.btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn:active,.opt:active{transform:scale(.98)}
+.audio{font:inherit;font-size:15px;background:var(--soft);border:2px dashed var(--amber);color:var(--navy);border-radius:14px;padding:10px;cursor:pointer;font-weight:600}
+.audio.sm{padding:7px;font-size:14px}
+.prog{height:12px;background:#e6dcc8;border-radius:8px;overflow:hidden}.prog i{display:block;height:100%;background:var(--amber);border-radius:8px;transition:width .4s}
+.prog.thin{height:9px;margin-bottom:8px}
+.cases{display:flex;flex-direction:column;gap:10px}
+.case{font:inherit;display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;cursor:pointer;color:var(--ink)}
+.case .ico{width:40px;height:40px;flex:none;border-radius:12px;background:#eee6d5;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy)}
+.case b{display:block;font-size:16px}.case small{color:#777;font-size:13px}
+.case.done .ico{background:var(--good);color:#fff}.case.next{border-color:var(--navy);box-shadow:0 3px 0 var(--navy)}
+.case.next .ico{background:var(--amber)}.case.lock{opacity:.5;cursor:default}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:6}
+.tabs button{font:inherit;font-size:13px;background:none;border:none;padding:8px 2px;border-radius:10px;color:#666;cursor:pointer}
+.tabs button.on{background:var(--soft);color:var(--navy);font-weight:700}
+.scene{background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px 8px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:46px;line-height:1.1}
+.q{font-weight:700;font-size:18px;color:var(--navy)}
+.opt{font:inherit;display:flex;gap:10px;align-items:center;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;color:var(--ink);min-height:52px}
+.opt b{flex:none;width:30px;height:30px;border-radius:50%;background:#eee6d5;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--navy)}
+.opt.right{border-color:var(--good);background:#e8f5ee}.opt.wrong{border-color:var(--bad);background:#fbeaea}
+.opt:disabled{cursor:default}
+.fb{border-radius:16px;padding:14px;border:2px solid}
+.fb b{display:block;font-size:17px;margin-bottom:4px}.fb p{margin-top:4px}
+.fb.good{background:#e8f5ee;border-color:var(--good)}.fb.good b{color:var(--good)}
+.fb.soft{background:var(--soft);border-color:var(--amber)}
+.fb.bad{background:#fbeaea;border-color:var(--bad)}.fb.bad b{color:var(--bad)}
+.fb.neutral{background:#eef1f7;border-color:#9aa6c2}
+.formula{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;text-align:center;font-size:13px}
+.formula span{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 4px;font-weight:600}
+.formula .hi{border-color:var(--navy);background:var(--amber)}
+.formula b{font-size:20px;color:var(--navy)}
+.quote{background:#fff;border-left:6px solid var(--amber);border-radius:0 14px 14px 0;padding:14px;font-size:18px}
+.step{background:#fff;border:2px dashed var(--line);border-radius:14px;padding:10px 12px;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.text{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px;font-size:17px;line-height:1.75}
+.text p+p{margin-top:12px}
+.fr{padding:2px 1px;border-radius:6px}
+.fr.tap{cursor:pointer;background:linear-gradient(transparent 62%,#fde7b0 62%)}
+.fr.tap:active{background:#fde7b0}
+.fr.clue{background:#cfe9da;outline:2px solid var(--good)}
+.tbox summary{cursor:pointer;font-weight:700;color:var(--navy);padding:6px 0}
+.chosen{background:#fff;border-radius:12px;padding:10px;border:2px solid var(--good)}
+.hint{background:var(--navy);color:#fff;border-radius:14px;padding:12px}
+.big-emoji{font-size:70px;margin-top:10px}
+.badge{display:inline-block;align-self:center;background:var(--amber);color:var(--navy);font-weight:800;border-radius:999px;padding:8px 18px}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bd{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 2px;text-align:center;font-size:11.5px;opacity:.45}
+.bd span{display:block;font-size:30px}.bd.got{opacity:1;border-color:var(--amber)}
+.card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.card summary{cursor:pointer}
+.row{display:flex;justify-content:space-between;font-size:15px}
+.cert{background:#fff;border:4px double var(--navy);border-radius:18px;padding:22px 16px;display:flex;flex-direction:column;gap:8px}
+.cert .seal{font-size:54px}.cert h2{font-size:26px}
+.help{padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.install{text-align:center}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:12px;font-size:15px;z-index:20;max-width:90vw;text-align:center}
+@media(min-width:520px){#app{box-shadow:0 0 0 1px var(--line)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript>Esta app necesita JavaScript activado.</noscript>
+<script>
+// Contenido pedagógico de Detectives de la Lectura.
+// Tipos de inferencia: C = causa, I = intención, V = vocabulario por contexto.
+const TIPOS = { C: '¿Por qué pasó?', I: '¿Qué quiere o qué siente?', V: '¿Qué significa la palabra?' };
+
+const CASO0 = [
+  { escena: ['🍲', '💨', '🔥', '👧', '😨'], alt: 'Una olla echando humo negro sobre el fogón y una niña con cara de susto.',
+    pregunta: 'Nadie te lo dice, pero puedes descubrirlo. ¿Qué crees que pasó?',
+    opciones: ['La niña está cocinando muy tranquila', 'Se le quemó la comida', 'Llegó una visita a la casa'], ok: 1,
+    pistas: ['El humo que sale de la olla', 'El color de la camisa de la niña', 'La hora del día'], pistaOk: 0,
+    explica: 'El humo saliendo de la olla y la cara de susto son las pistas: la comida se quemó.' },
+  { escena: ['🐕', '💧', '☔', '🚪', '🌧️'], alt: 'Un perro empapado en la puerta, junto a un paraguas que gotea.',
+    pregunta: '¿Qué está pasando afuera?',
+    opciones: ['Hace mucho sol', 'Está lloviendo', 'Hay una fiesta en la calle'], ok: 1,
+    pistas: ['El paraguas que gotea', 'La raza del perro', 'El color de la puerta'], pistaOk: 0,
+    explica: 'Un paraguas que gotea y un perro empapado nos dicen que afuera está lloviendo.' },
+  { escena: ['👵', '🎂', '🕯️', '🎈', '🎁'], alt: 'Una abuela frente a una torta con velas, globos y regalos.',
+    pregunta: '¿Qué se está celebrando?',
+    opciones: ['El cumpleaños de la abuela', 'El primer día de clases', 'Que ganó un partido'], ok: 0,
+    pistas: ['Las velas en la torta', 'Los lentes de la abuela', 'La mesa de madera'], pistaOk: 0,
+    explica: 'Las velas en la torta, los globos y los regalos son señales de un cumpleaños.' },
+  { escena: ['👦', '⚽', '🩹', '🦵', '🟫'], alt: 'Un niño con una curita en la rodilla y un balón lleno de barro.',
+    pregunta: '¿Qué le pasó al niño?',
+    opciones: ['Se cayó jugando fútbol', 'Se le perdió el balón', 'Ganó una medalla'], ok: 0,
+    pistas: ['La curita en la rodilla', 'El número de su camiseta', 'El color del balón'], pistaOk: 0,
+    explica: 'La curita en la rodilla y el balón embarrado muestran que se cayó mientras jugaba.' },
+];
+
+const CASO1 = [
+  { tipo: 'C', frase: 'Cuando Mariela abrió la nevera, arrugó la nariz y la cerró rápido.',
+    pasos: ['🔎 Pista: «arrugó la nariz y la cerró rápido».', '🧠 Lo que ya sé: cuando algo huele mal, uno arruga la nariz.', '💡 Infiero: algo dentro de la nevera olía mal o estaba dañado.'],
+    pregunta: '¿Qué pasaba dentro de la nevera?', opciones: ['Había algo dañado que olía mal', 'Estaba muy ordenada', 'Había un regalo para ella'], ok: 0 },
+  { tipo: 'I', frase: 'Antes de que llegaran sus primos, Pedro escondió el último bollo de yuca detrás de la tinaja.',
+    pasos: ['🔎 Pista: «escondió el último bollo» y «antes de que llegaran sus primos».', '🧠 Lo que ya sé: escondemos las cosas que no queremos compartir.', '💡 Infiero: Pedro quería guardar el bollo para él solo.'],
+    pregunta: '¿Qué quería Pedro?', opciones: ['Regalarles el bollo a sus primos', 'Guardar el bollo para él solo', 'Botar el bollo'], ok: 1 },
+  { tipo: 'V', frase: 'El sol estaba tan inclemente que hasta los perros buscaban la sombra de los almendros.',
+    pasos: ['🔎 Pista: «hasta los perros buscaban la sombra».', '🧠 Lo que ya sé: buscamos sombra cuando el sol quema mucho.', '💡 Infiero: «inclemente» significa muy fuerte, que no da descanso.'],
+    pregunta: '¿Qué significa «inclemente»?', opciones: ['Suave y agradable', 'Muy fuerte, sin descanso', 'Escondido entre nubes'], ok: 1 },
+];
+
+// Casos de práctica y gran caso. Cada pregunta: tipo, texto, opciones, ok, pistas (índices de frases válidas), ayuda, explica.
+const CASOS = {
+  c2: {
+    parrafos: [0, 2, 5, 6, 7, 8, 10],
+    titulo: 'El pescador y la nube gris', genero: 'Relato',
+    frases: [
+      'Don Eusebio llegó al muelle de Puerto Colombia antes de que saliera el sol, como todos los días.',
+      'Llevaba la atarraya al hombro y una bolsa con bollo de yuca para el almuerzo.',
+      'Esa mañana, sin embargo, las gaviotas volaban hacia tierra y el mar golpeaba las piedras con furia.',
+      'Don Eusebio miró el horizonte, frunció el ceño y no desamarró la canoa.',
+      'Se sentó en un banco a remendar los huecos de su red.',
+      'Al rato llegó Wilmer, su nieto, con la mochila del colegio en la espalda.',
+      '—Abuelo, ¿hoy no hay pescado para vender? —preguntó.',
+      '—Hoy el mar está bravo, mijo. Mañana Dios dirá —respondió el viejo, sin dejar de tejer.',
+      'Wilmer sacó de la mochila medio pan que había guardado del recreo y se lo dio.',
+      'Don Eusebio sonrió, partió el pan en dos y le devolvió la mitad.',
+      'A media mañana, el cielo se puso negro y empezó a llover a cántaros.',
+      'Los pescadores que habían salido temprano regresaban empapados y con las redes vacías.',
+    ],
+    preguntas: [
+      { tipo: 'C', texto: '¿Por qué Don Eusebio no salió a pescar ese día?', opciones: ['Estaba muy cansado', 'Vio señales de que venía mal tiempo', 'Su canoa estaba dañada'], ok: 1, pistas: [2],
+        ayuda: 'Vuelve a leer qué hacían las gaviotas y el mar esa mañana.', explica: 'Las gaviotas volando hacia tierra y el mar golpeando con furia son señales de tormenta. Don Eusebio las conoce por experiencia.' },
+      { tipo: 'V', texto: 'Cuando el abuelo dice «el mar está bravo», quiere decir que el mar está…', opciones: ['Agitado y peligroso', 'Muy limpio', 'Lleno de peces'], ok: 0, pistas: [2],
+        ayuda: 'Busca cómo golpeaba el mar las piedras.', explica: 'El mar «golpeaba las piedras con furia»: por eso «bravo» significa agitado y peligroso.' },
+      { tipo: 'I', texto: '¿Para qué Wilmer le dio el pan a su abuelo?', opciones: ['Porque a él no le gustaba el pan', 'Para que su abuelo tuviera algo de comer ese día', 'Para que se lo guardara hasta mañana'], ok: 1, pistas: [6, 8],
+        ayuda: 'Fíjate en lo que Wilmer le preguntó al llegar.', explica: 'Wilmer entendió que, sin pescado para vender, ese día no habría dinero. Por eso le compartió lo que tenía.' },
+      { tipo: 'I', texto: '¿Qué muestra Don Eusebio cuando parte el pan y le devuelve la mitad?', opciones: ['Que no tenía hambre', 'Que también quiere cuidar a su nieto', 'Que el pan estaba duro'], ok: 1, pistas: [9],
+        ayuda: 'Mira lo que hizo el abuelo con el pan y cómo reaccionó.', explica: 'Sonrió y compartió: así muestra cariño y que también quiere que su nieto coma.' },
+      { tipo: 'C', texto: '¿Por qué los otros pescadores regresaron con las redes vacías?', opciones: ['La tormenta no los dejó pescar', 'No sabían pescar', 'Ya habían vendido todo'], ok: 0, pistas: [10, 11],
+        ayuda: 'Lee qué pasó con el cielo a media mañana.', explica: 'El cielo se puso negro y llovió muy fuerte: con ese tiempo no pudieron pescar. Don Eusebio tenía razón.' },
+      { tipo: 'V', texto: '«Empezó a llover a cántaros» significa que llovió…', opciones: ['Muy poquito', 'Muy fuerte', 'Solo en el muelle'], ok: 1, pistas: [10, 11],
+        ayuda: 'Busca cómo regresaron los pescadores.', explica: 'Los pescadores volvieron «empapados»: llovió muy fuerte, como si vaciaran cántaros de agua.' },
+    ],
+  },
+  c3: {
+    parrafos: [0, 1, 3, 4, 6, 8, 10],
+    titulo: 'Vecinos recuperan la cancha del barrio', genero: 'Noticia',
+    frases: [
+      'Soledad, domingo 15 de marzo.',
+      'Durante dos años, la cancha del barrio La Esperanza estuvo llena de maleza, botellas y escombros.',
+      'Los niños jugaban fútbol en la calle, entre motos y carretillas.',
+      'El mes pasado, la señora Ruth, que vive frente a la cancha, pegó un cartel en la tienda de la esquina: «Domingo, 7 a. m. Traiga pala y buena energía».',
+      'Ese domingo llegaron más de cuarenta vecinos.',
+      'Unos cortaron la maleza, otros recogieron la basura y los más jóvenes pintaron las porterías de azul.',
+      'Don Álvaro, el dueño de la tienda, regaló agua y hielo para todos.',
+      '«Yo vendo más cuando los pelaos están en la calle, pero prefiero verlos seguros en la cancha», comentó.',
+      'Al mediodía, la cancha parecía otra.',
+      'Ahora, cada tarde, se escuchan gritos de gol donde antes solo había silencio.',
+      'Los vecinos ya planean el siguiente paso: un torneo para reunir fondos y comprar una malla.',
+    ],
+    preguntas: [
+      { tipo: 'C', texto: '¿Por qué los niños jugaban en la calle antes de la jornada?', opciones: ['Porque la cancha estaba llena de basura y maleza', 'Porque en la calle había más espacio', 'Porque el colegio se lo pedía'], ok: 0, pistas: [1],
+        ayuda: 'Lee cómo estaba la cancha durante dos años.', explica: 'Con maleza, botellas y escombros, la cancha no se podía usar. Por eso jugaban en la calle.' },
+      { tipo: 'I', texto: '¿Qué quería lograr la señora Ruth con el cartel?', opciones: ['Vender palas en la tienda', 'Reunir a los vecinos para limpiar la cancha', 'Invitar a una fiesta'], ok: 1, pistas: [3],
+        ayuda: 'Fíjate en qué pedía el cartel que llevaran.', explica: '«Traiga pala» y la hora indican una jornada de trabajo: quería reunir a los vecinos para arreglar la cancha.' },
+      { tipo: 'I', texto: '¿Qué muestra lo que dice Don Álvaro?', opciones: ['Que le importa más la seguridad de los niños que vender', 'Que quiere vender más hielo', 'Que no le gustan los niños'], ok: 0, pistas: [7],
+        ayuda: 'Lee con atención la frase de Don Álvaro.', explica: 'Admite que vende más cuando los niños están en la calle, pero prefiere verlos seguros: pone a los niños primero.' },
+      { tipo: 'V', texto: 'En la noticia, «los pelaos» son…', opciones: ['Los perros del barrio', 'Los niños y jóvenes', 'Los vendedores'], ok: 1, pistas: [7, 2],
+        ayuda: '¿A quiénes quiere ver «seguros en la cancha»?', explica: 'Don Álvaro quiere ver «seguros en la cancha» a los que antes jugaban en la calle: los niños y jóvenes.' },
+      { tipo: 'C', texto: '¿Por qué ahora se escuchan gritos de gol en las tardes?', opciones: ['Porque pusieron un televisor', 'Porque los niños volvieron a jugar en la cancha limpia', 'Porque hay un partido profesional'], ok: 1, pistas: [5, 8],
+        ayuda: 'Piensa en lo que hicieron los vecinos ese domingo.', explica: 'Al limpiar y pintar la cancha, los niños pudieron volver a jugar allí. Por eso se oyen goles.' },
+      { tipo: 'V', texto: '«Al mediodía, la cancha parecía otra» quiere decir que…', opciones: ['Se veía muy cambiada y mucho mejor', 'Se habían equivocado de cancha', 'Estaba más sucia'], ok: 0, pistas: [5],
+        ayuda: 'Busca qué hicieron los vecinos durante la mañana.', explica: 'Después de cortar maleza, recoger basura y pintar, la cancha cambió tanto que parecía otra.' },
+    ],
+  },
+  c4: {
+    parrafos: [0, 3, 6, 8],
+    titulo: 'El alcaraván vigilante', genero: 'Fábula',
+    frases: [
+      'En un patio de Soledad vivía un alcaraván que dormía de día y caminaba de noche.',
+      'Las gallinas se burlaban de él: «Ese pájaro flaco no pone huevos ni canta bonito».',
+      'El alcaraván no respondía; solo caminaba despacio entre los matorrales, con sus ojos grandes muy abiertos.',
+      'Una noche sin luna, mientras todos dormían, se escuchó un crujido junto a la cerca.',
+      'El alcaraván levantó la cabeza y lanzó su grito agudo: ¡caraván, caraván!',
+      'El perro despertó, ladró con fuerza y una zarigüeya salió corriendo con las manos vacías.',
+      'A la mañana siguiente, la gallina más vieja contó a sus pollitos uno por uno.',
+      'Estaban todos completos.',
+      'Desde ese día, cuando el alcaraván pasa por el patio, las gallinas le abren camino.',
+      'Ninguna ha vuelto a reírse de su voz.',
+    ],
+    preguntas: [
+      { tipo: 'C', texto: '¿Por qué la zarigüeya salió corriendo con las manos vacías?', opciones: ['Porque el grito del alcaraván despertó al perro', 'Porque no le gustaban los pollitos', 'Porque ya era de día'], ok: 0, pistas: [4, 5],
+        ayuda: 'Lee qué pasó justo después del grito del alcaraván.', explica: 'El grito despertó al perro, que ladró. Con el peligro descubierto, la zarigüeya tuvo que huir sin llevarse nada.' },
+      { tipo: 'I', texto: '¿Qué quería hacer la zarigüeya junto a la cerca?', opciones: ['Dormir', 'Llevarse algún pollito', 'Jugar con el perro'], ok: 1, pistas: [5, 7],
+        ayuda: '¿Qué contó la gallina vieja a la mañana siguiente?', explica: 'Salió «con las manos vacías» y la gallina tuvo que contar a sus pollitos: la zarigüeya venía por ellos.' },
+      { tipo: 'V', texto: 'El grito del alcaraván era «agudo». Eso quiere decir que era…', opciones: ['Muy bajito', 'Fino y fuerte, se oía lejos', 'Triste y lento'], ok: 1, pistas: [5],
+        ayuda: 'Mira lo que provocó ese grito en el perro.', explica: 'El grito despertó al perro: era un sonido fino y fuerte que se escuchaba lejos.' },
+      { tipo: 'C', texto: '¿Por qué la gallina vieja contó a sus pollitos en la mañana?', opciones: ['Para enseñarles los números', 'Para saber si faltaba alguno después del peligro', 'Porque estaba aburrida'], ok: 1, pistas: [3, 5],
+        ayuda: 'Recuerda lo que pasó en la noche junto a la cerca.', explica: 'Después del ruido en la cerca y la zarigüeya, quería saber si alguno de sus pollitos faltaba.' },
+      { tipo: 'V', texto: '«Las gallinas le abren camino» significa que…', opciones: ['Se apartan para dejarlo pasar, por respeto', 'Le construyen un camino de piedras', 'Lo persiguen'], ok: 0, pistas: [9],
+        ayuda: 'Fíjate en cómo cambió la actitud de las gallinas.', explica: 'Ya no se burlan de él: lo respetan y se apartan para dejarlo pasar.' },
+      { tipo: 'I', texto: '¿Qué enseñanza quiere dejar la fábula?', opciones: ['Que los perros son los mejores guardianes', 'Que no hay que juzgar a nadie por su apariencia', 'Que hay que dormir temprano'], ok: 1, pistas: [1, 8, 9],
+        ayuda: 'Compara lo que pensaban las gallinas al principio y al final.', explica: 'Al principio se burlaban del «pájaro flaco»; al final lo respetan. Nadie debe ser juzgado por cómo se ve.' },
+    ],
+  },
+  gran: {
+    parrafos: [0, 3, 5, 6, 7, 9, 10, 12, 15, 16],
+    titulo: 'La mochila de Yeinis', genero: 'Relato',
+    frases: [
+      'Yeinis llegó al salón con los ojos hinchados y se sentó en la última fila, aunque siempre se sentaba adelante.',
+      'Guardó la mochila debajo del pupitre y la apretó con los pies durante toda la clase.',
+      'Cuando la profesora Mirna pidió el cuaderno de tareas, Yeinis bajó la mirada y no dijo nada.',
+      'A la hora del recreo, no salió a jugar yermis como de costumbre.',
+      'Se quedó sola en el salón, sacando y metiendo cosas en la mochila, una y otra vez.',
+      'Su amigo Kevin se asomó por la ventana y vio que la mochila tenía una costura rota y una mancha enorme de barro.',
+      '—¿Qué te pasó? —le preguntó.',
+      'Yeinis le contó que en la mañana, al cruzar el arroyo de la calle 30, se había resbalado.',
+      'La mochila cayó al agua y todo quedó empapado: el cuaderno de tareas, el libro de lectura y la carta que su abuela le había escrito desde Valledupar.',
+      '—El cuaderno se puede volver a hacer —dijo Kevin—, pero ¿y la carta?',
+      'Yeinis no respondió; sacó un papel arrugado y lo extendió con cuidado sobre el pupitre, como si fuera un tesoro.',
+      'Las letras azules se habían corrido, pero todavía se podía leer: «Te quiero mucho, mi niña».',
+      'Kevin salió corriendo y volvió con la profesora Mirna.',
+      'La profesora miró el papel, tomó el secador de pelo que usaban para las carteleras y, con paciencia, lo secó por ambos lados.',
+      'Luego lo guardó en un sobre plástico y se lo devolvió.',
+      '—Las tareas las hacemos juntas esta tarde —le dijo—. Y esta carta va a durar más que ese arroyo.',
+      'Al día siguiente, Yeinis llegó temprano, con una mochila prestada y la carta pegada en la primera página de su cuaderno nuevo.',
+      'Esta vez se sentó en la primera fila.',
+    ],
+    preguntas: [
+      { tipo: 'C', texto: '¿Por qué Yeinis se sentó en la última fila ese día?', opciones: ['Estaba triste y no quería que la vieran', 'La profesora la castigó', 'Llegó tarde'], ok: 0, pistas: [0] , explica: 'Tenía los ojos hinchados de llorar y se sentó lejos, aunque siempre se sentaba adelante.' },
+      { tipo: 'I', texto: '¿Por qué Yeinis apretaba la mochila con los pies?', opciones: ['Tenía frío en los pies', 'Quería esconder cómo había quedado la mochila', 'Quería jugar con ella'], ok: 1, pistas: [5], explica: 'La mochila estaba rota y llena de barro: la escondía para que nadie lo notara.' },
+      { tipo: 'C', texto: '¿Por qué no entregó el cuaderno de tareas?', opciones: ['No había hecho la tarea', 'Se le mojó cuando la mochila cayó al arroyo', 'Se lo había prestado a Kevin'], ok: 1, pistas: [8], explica: 'Todo quedó empapado en el arroyo, incluido el cuaderno de tareas.' },
+      { tipo: 'V', texto: '«Las letras azules se habían corrido» quiere decir que…', opciones: ['Se habían regado y borrado un poco con el agua', 'Se habían cambiado de página', 'Eran letras muy rápidas'], ok: 0, pistas: [8], explica: 'La carta se mojó en el arroyo, por eso la tinta se regó.' },
+      { tipo: 'I', texto: '¿Qué muestra Yeinis al extender la carta «como si fuera un tesoro»?', opciones: ['Que la carta es muy valiosa para ella', 'Que quería botarla', 'Que buscaba una dirección'], ok: 0, pistas: [10, 11], explica: 'La trata con cuidado, como un tesoro: la carta de su abuela es muy importante para ella.' },
+      { tipo: 'I', texto: '¿Para qué fue Kevin a buscar a la profesora?', opciones: ['Para acusar a Yeinis', 'Para que ayudara a salvar la carta', 'Para pedir permiso de jugar'], ok: 1, pistas: [9], explica: 'Kevin sabía que el cuaderno se podía rehacer, pero la carta no: buscó ayuda para salvarla.' },
+      { tipo: 'V', texto: '«Esta carta va a durar más que ese arroyo» significa que…', opciones: ['La carta quedó protegida y se va a conservar mucho tiempo', 'El arroyo se va a secar mañana', 'Hay que volver al arroyo'], ok: 0, pistas: [14], explica: 'La profesora la secó y la guardó en un sobre plástico: ahora está protegida.' },
+      { tipo: 'C', texto: '¿Por qué Yeinis se sentó en la primera fila al día siguiente?', opciones: ['Porque la obligaron', 'Porque ya se sentía mejor y acompañada', 'Porque perdió su puesto de atrás'], ok: 1, pistas: [15, 16], explica: 'Con la carta a salvo y la ayuda de la profesora y Kevin, volvió a sentirse bien.' },
+    ],
+  },
+};
+
+</script>
+<script>
+// Lógica de la app Detectives de la Lectura
+const KEY = 'detectives_lectura_v1';
+const ORDEN = ['c0', 'c1', 'c2', 'c3', 'c4', 'gran'];
+const NOMBRES = { c0: 'Caso 0 · ¿Qué pasó aquí?', c1: 'Caso 1 · La fórmula detective', c2: 'Caso 2 · El pescador y la nube gris', c3: 'Caso 3 · La noticia del barrio', c4: 'Caso 4 · El alcaraván vigilante', gran: 'El gran caso' };
+const FASES = { c0: 'Exploración', c1: 'Aprendizaje', c2: 'Práctica · relato', c3: 'Práctica · noticia', c4: 'Práctica · fábula', gran: 'Evidencia final' };
+const AVATARES = [{ e: '🔍', n: 'Lupa' }, { e: '🧩', n: 'Pista' }, { e: '🐾', n: 'Huella' }];
+
+function nuevo() {
+  return { nombre: '', avatar: 0, hechos: {}, puntos: 0, stats: { C: [0, 0], I: [0, 0], V: [0, 0] },
+    diag: { ok: 0, total: 0 }, resultados: {}, gran: null, intentosGran: 0 };
+}
+let E = nuevo();
+try { const g = JSON.parse(localStorage.getItem(KEY)); if (g && typeof g === 'object') E = Object.assign(nuevo(), g); } catch (e) {}
+function guardar() { try { localStorage.setItem(KEY, JSON.stringify(E)); } catch (e) {} }
+
+const $ = s => document.querySelector(s);
+const app = () => $('#app');
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function desbloqueado(id) { const i = ORDEN.indexOf(id); return i === 0 || !!E.hechos[ORDEN[i - 1]]; }
+function avance() { return Math.round(ORDEN.filter(id => E.hechos[id]).length / ORDEN.length * 100); }
+function arriba() { try { window.scrollTo(0, 0); } catch (e) {} }
+
+// ---------- Audio (lectura en voz alta) ----------
+function hablar(texto) {
+  try {
+    if (!('speechSynthesis' in window)) { aviso('Tu celular no tiene lectura en voz alta.'); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-CO'; u.rate = 0.92;
+    const voces = speechSynthesis.getVoices();
+    const v = voces.find(v => /es[-_](CO|MX|US|419)/i.test(v.lang)) || voces.find(v => /^es/i.test(v.lang));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function callar() { try { speechSynthesis.cancel(); } catch (e) {} }
+function aviso(t) { const a = document.createElement('div'); a.className = 'toast'; a.textContent = t; document.body.appendChild(a); setTimeout(() => a.remove(), 2600); }
+
+function barra(titulo, derecha, volver = true) {
+  return `<header class="top">${volver ? '<button class="back" onclick="irLibreta()" aria-label="Volver a la libreta">←</button>' : '<span></span>'}<span class="tt">${titulo}</span><span class="pts">${derecha || '⭐ ' + E.puntos}</span></header>`;
+}
+
+// ---------- Bienvenida ----------
+function bienvenida() {
+  callar();
+  app().innerHTML = `<main class="screen welcome">
+    <div class="logo" aria-hidden="true">🔍📖</div>
+    <h1>Detectives de la Lectura</h1>
+    <p class="lead">Aprende a descubrir lo que el texto no dice con palabras.</p>
+    <button class="audio" onclick="hablar('Bienvenido a Detectives de la Lectura. Escribe tu nombre, elige tu detective y toca Empezar la investigación.')">🔊 Escuchar instrucciones</button>
+    <label class="lbl" for="nom">¿Cómo te llamas?</label>
+    <input id="nom" maxlength="24" placeholder="Escribe tu nombre" value="${esc(E.nombre)}" autocomplete="off">
+    <p class="lbl">Elige tu detective</p>
+    <div class="avatars">${AVATARES.map((a, i) => `<button class="av${i === E.avatar ? ' on' : ''}" onclick="elegirAvatar(${i})" aria-label="Detective ${a.n}"><span>${a.e}</span>${a.n}</button>`).join('')}</div>
+    <button class="btn big" onclick="empezar()">Empezar la investigación</button>
+    <div class="install" id="instalar"></div>
+  </main>`;
+  pintarInstalar();
+}
+function elegirAvatar(i) { E.avatar = i; const n = $('#nom').value; bienvenida(); $('#nom').value = n; }
+function empezar() {
+  const n = $('#nom').value.trim();
+  if (!n) { aviso('Escribe tu nombre para empezar 🙂'); $('#nom').focus(); return; }
+  E.nombre = n; guardar(); irLibreta();
+}
+
+// ---------- Libreta de casos ----------
+function irLibreta() {
+  callar(); arriba();
+  const av = AVATARES[E.avatar];
+  app().innerHTML = `<main class="screen">
+    ${barra(`${av.e} Detective ${esc(E.nombre)}`, '⭐ ' + E.puntos, false)}
+    <h2>Tu libreta de casos</h2>
+    <div class="prog"><i style="width:${avance()}%"></i></div>
+    <p class="small right">${ORDEN.filter(id => E.hechos[id]).length} de ${ORDEN.length} casos resueltos</p>
+    <div class="cases">${ORDEN.map(id => {
+      const ok = !!E.hechos[id], ab = desbloqueado(id);
+      const r = E.resultados[id];
+      return `<button class="case${ok ? ' done' : ''}${!ab ? ' lock' : ''}${ab && !ok ? ' next' : ''}" ${ab ? `onclick="abrirCaso('${id}')"` : 'disabled'}>
+        <span class="ico">${ok ? '✓' : ab ? ORDEN.indexOf(id) : '🔒'}</span>
+        <span><b>${NOMBRES[id]}</b><small>${FASES[id]}${r ? ` · ${r.ok}/${r.total}` : ''}</small></span></button>`;
+    }).join('')}</div>
+    <nav class="tabs"><button class="on">📒 Casos</button><button onclick="progreso()">📊 Mi progreso</button><button onclick="ayuda()">❓ Ayuda</button></nav>
+  </main>`;
+}
+function abrirCaso(id) {
+  if (id === 'c0') caso0(0);
+  else if (id === 'c1') caso1(-1, 0);
+  else lectura(id);
+}
+
+// ---------- Caso 0: exploración (diagnóstico) ----------
+let c0 = { i: 0, fase: 'resp', elegida: null };
+function caso0(i) {
+  if (i === 0) { E.diag = { ok: 0, total: 0 }; }
+  c0 = { i, fase: 'resp', elegida: null }; pintarC0();
+}
+function pintarC0() {
+  arriba();
+  const s = CASO0[c0.i];
+  let cuerpo = '';
+  if (c0.fase === 'resp') {
+    cuerpo = `<p class="q">${s.pregunta}</p>${s.opciones.map((o, k) => `<button class="opt" onclick="c0Resp(${k})"><b>${'ABC'[k]}</b>${o}</button>`).join('')}`;
+  } else if (c0.fase === 'pista') {
+    cuerpo = `<p class="q">¿Qué detalle de la escena te hizo pensarlo?</p>${s.pistas.map((o, k) => `<button class="opt" onclick="c0Pista(${k})"><b>🔎</b>${o}</button>`).join('')}`;
+  } else {
+    const bien = c0.elegida === s.ok && c0.pistaElegida === s.pistaOk;
+    cuerpo = `<div class="fb ${bien ? 'good' : 'soft'}"><b>${bien ? '¡Bien visto, detective!' : 'Mira otra vez la escena…'}</b><p>${s.explica}</p></div>
+      <button class="btn" onclick="${c0.i < CASO0.length - 1 ? `c0Sig()` : 'c0Fin()'}">${c0.i < CASO0.length - 1 ? 'Siguiente escena' : 'Terminar'}</button>`;
+  }
+  app().innerHTML = `<main class="screen">${barra('Caso 0 · ¿Qué pasó aquí?', `${c0.i + 1}/${CASO0.length}`)}
+    <h2>¿Qué pasó aquí?</h2>
+    <div class="scene" role="img" aria-label="${esc(s.alt)}">${s.escena.map(e => `<span>${e}</span>`).join('')}</div>
+    <button class="audio sm" onclick="hablar('${esc(s.alt)} ${esc(s.pregunta)}')">🔊 Escuchar</button>
+    ${cuerpo}</main>`;
+}
+function c0Resp(k) { c0.elegida = k; c0.fase = 'pista'; pintarC0(); }
+function c0Pista(k) {
+  const s = CASO0[c0.i]; c0.pistaElegida = k; c0.fase = 'fb';
+  E.diag.total++; if (c0.elegida === s.ok && k === s.pistaOk) E.diag.ok++;
+  guardar(); pintarC0();
+}
+function c0Sig() { c0.i++; c0.fase = 'resp'; c0.elegida = null; pintarC0(); }
+function c0Fin() {
+  E.hechos.c0 = true; E.resultados.c0 = { ok: E.diag.ok, total: E.diag.total }; E.puntos += 20; guardar();
+  final('¡Caso 0 resuelto!', `Ya eres detective sin saberlo: <b>inferir</b> es descubrir lo que nadie te dice, usando pistas. Acertaste ${E.diag.ok} de ${E.diag.total} escenas. En el Caso 1 vas a aprender a hacerlo con textos.`, '+20 ⭐');
+}
+
+// ---------- Caso 1: aprendizaje (modelado y práctica guiada) ----------
+function caso1(i, paso) {
+  arriba();
+  if (i === -1) return intro1();
+  const x = CASO1[i];
+  const pasos = x.pasos.slice(0, paso).map(p => `<div class="step">${p}</div>`).join('');
+  let pie = '';
+  if (paso < 3) pie = `<button class="btn" onclick="caso1(${i},${paso + 1})">${paso === 0 ? 'Buscar la pista 🔎' : paso === 1 ? '¿Qué sé yo? 🧠' : 'Hacer la inferencia 💡'}</button>`;
+  else pie = `<p class="q">${x.pregunta}</p>${x.opciones.map((o, k) => `<button class="opt" onclick="c1Resp(${i},${k})"><b>${'ABC'[k]}</b>${o}</button>`).join('')}`;
+  app().innerHTML = `<main class="screen">${barra('Caso 1 · La fórmula detective', `${i + 1}/3`)}
+    ${formula()}
+    <p class="small">Ejemplo ${i + 1} · ${TIPOS[x.tipo]}</p>
+    <div class="quote">${x.frase}</div>
+    <button class="audio sm" onclick="hablar('${esc(x.frase)}')">🔊 Escuchar</button>
+    ${pasos}${pie}</main>`;
+}
+function formula() { return `<div class="formula"><span>Pista<br>del texto</span><b>+</b><span>Lo que<br>ya sé</span><b>=</b><span class="hi">Inferencia</span></div>`; }
+function intro1() {
+  app().innerHTML = `<main class="screen">${barra('Caso 1 · La fórmula detective', '🔊', true)}
+    <h2>La fórmula detective</h2>${formula()}
+    <p>Los textos no lo dicen todo. Un buen lector, como un detective, junta <b>una pista del texto</b> con <b>lo que ya sabe</b> y así descubre lo que el autor no escribió.</p>
+    <div class="quote">«Toño miró el cielo, guardó la atarraya y se quedó en casa».</div>
+    <div class="step">🔎 Pista: «miró el cielo»</div>
+    <div class="step">🧠 Lo que ya sé: si el cielo se pone feo, no se sale al mar.</div>
+    <div class="step">💡 Infiero: <b>venía una tormenta</b>.</div>
+    <button class="audio sm" onclick="hablar('Los textos no lo dicen todo. Un buen lector junta una pista del texto con lo que ya sabe, y así descubre lo que el autor no escribió. Por ejemplo: Toño miró el cielo, guardó la atarraya y se quedó en casa. La pista es: miró el cielo. Lo que ya sé: si el cielo se pone feo, no se sale al mar. Infiero: venía una tormenta.')">🔊 Escuchar la explicación</button>
+    <p class="small">Ahora practica con tres ejemplos, uno de cada tipo de pista.</p>
+    <button class="btn" onclick="caso1(0,0)">Ver el primer ejemplo</button></main>`;
+}
+function c1Resp(i, k) {
+  const x = CASO1[i], bien = k === x.ok;
+  const sig = i < 2 ? `caso1(${i + 1},0)` : 'c1Fin()';
+  const panel = document.createElement('div');
+  document.querySelectorAll('.opt').forEach((b, j) => { b.disabled = true; if (j === x.ok) b.classList.add('right'); else if (j === k) b.classList.add('wrong'); });
+  panel.innerHTML = `<div class="fb ${bien ? 'good' : 'soft'}"><b>${bien ? '¡Así se hace!' : 'Casi. Mira los tres pasos otra vez.'}</b><p>${x.pasos[2].replace('💡 Infiero: ', 'La inferencia correcta: ')}</p></div>
+    <button class="btn" onclick="${sig}">${i < 2 ? 'Siguiente ejemplo' : 'Terminar'}</button>`;
+  app().querySelector('main').appendChild(panel);
+  if (bien) { E.puntos += 5; guardar(); }
+}
+function c1Fin() { E.hechos.c1 = true; E.puntos += 20; guardar(); final('¡Caso 1 resuelto!', 'Ya conoces la fórmula: <b>pista del texto + lo que ya sé = inferencia</b>. En los casos 2, 3 y 4 la vas a usar sola o solo, y además tendrás que señalar la frase que te dio la pista.', '+20 ⭐ · Recuerda la fórmula'); }
+
+// ---------- Casos de lectura (práctica y gran caso) ----------
+let L = null;
+function lectura(id) {
+  L = { id, i: -1, fase: 'leer', intentos: 0, intentosPista: 0, ok: 0, porTipo: { C: [0, 0], I: [0, 0], V: [0, 0] }, resp: null };
+  pintarL();
+}
+function textoHTML(clic) {
+  const c = CASOS[L.id];
+  const par = c.parrafos || [0];
+  return '<p>' + c.frases.map((f, k) => `${k > 0 && par.includes(k) ? '</p><p>' : ''}<span class="fr${clic ? ' tap' : ''}" data-k="${k}" ${clic ? `onclick="tocarFrase(${k})"` : ''}>${f}</span>`).join(' ') + '</p>';
+}
+function pintarL() {
+  arriba();
+  const c = CASOS[L.id], gran = L.id === 'gran';
+  if (L.fase === 'leer') {
+    app().innerHTML = `<main class="screen">${barra(NOMBRES[L.id], c.genero)}
+      <h2>${c.titulo}</h2>
+      ${gran ? '<div class="fb soft"><b>Reglas del gran caso</b><p>Un texto que no conoces y 8 preguntas, sin ayudas. En cada una eliges la respuesta y tocas la frase que la demuestra. Logras el certificado con <b>6 de 8</b> respuestas y pistas correctas.</p></div>' : '<p class="small">Lee con calma. Luego responderás 6 preguntas y tendrás que encontrar la pista en el texto.</p>'}
+      <button class="audio" onclick="hablar(CASOS['${L.id}'].frases.join(' '))">🔊 Escuchar el texto</button>
+      <article class="text">${textoHTML(false)}</article>
+      <button class="btn" onclick="L.i=0;L.fase='resp';pintarL()">Ya lo leí: ir a las preguntas</button></main>`;
+    return;
+  }
+  const p = c.preguntas[L.i], n = c.preguntas.length;
+  let zona = '';
+  if (L.fase === 'resp') {
+    zona = `<p class="q">${p.texto}</p>${p.opciones.map((o, k) => `<button class="opt" onclick="responder(${k})"><b>${'ABC'[k]}</b>${o}</button>`).join('')}
+      ${L.intentos === 1 && !gran ? `<div class="fb soft"><b>Casi…</b><p>${p.ayuda}</p></div>` : ''}`;
+  } else if (L.fase === 'pista') {
+    zona = `<p class="q">${p.texto}</p><div class="chosen">Tu respuesta: <b>${p.opciones[L.resp]}</b></div>
+      <div class="hint">✋ Ahora <b>toca en el texto la frase</b> que te dio la pista.</div>
+      ${L.intentosPista === 1 && !gran ? '<div class="fb soft"><b>Esa frase no lo demuestra.</b><p>Busca otra: ¿dónde está la prueba?</p></div>' : ''}`;
+  } else {
+    zona = L.panel;
+  }
+  app().innerHTML = `<main class="screen">${barra(NOMBRES[L.id], `${L.i + 1}/${n}`)}
+    <div class="prog"><i style="width:${(L.i) / n * 100}%"></i></div>
+    <p class="small">${gran ? 'El gran caso · sin ayudas' : TIPOS[p.tipo]}</p>
+    ${zona}
+    <details class="tbox" open><summary>📄 ${L.fase === 'pista' ? 'Texto: toca la frase' : 'Ver el texto'}</summary><article class="text">${textoHTML(L.fase === 'pista')}</article></details>
+  </main>`;
+  if (L.fase === 'fb') marcarPistas(p);
+}
+function marcarPistas(p) { document.querySelectorAll('.fr').forEach(s => { if (p.pistas.includes(+s.dataset.k)) s.classList.add('clue'); }); }
+function responder(k) {
+  const p = CASOS[L.id].preguntas[L.i], gran = L.id === 'gran';
+  L.resp = k;
+  if (k === p.ok) { L.fase = 'pista'; L.intentosPista = 0; pintarL(); return; }
+  if (!gran && L.intentos === 0) { L.intentos = 1; pintarL(); aviso('Inténtalo otra vez'); return; }
+  cerrar(false, false);
+}
+function tocarFrase(k) {
+  const p = CASOS[L.id].preguntas[L.i], gran = L.id === 'gran';
+  if (p.pistas.includes(k)) { cerrar(true, true); return; }
+  if (!gran && L.intentosPista === 0) { L.intentosPista = 1; pintarL(); return; }
+  cerrar(true, false);
+}
+function cerrar(respOk, pistaOk) {
+  const c = CASOS[L.id], p = c.preguntas[L.i], gran = L.id === 'gran';
+  const todo = respOk && pistaOk;
+  L.porTipo[p.tipo][1]++; if (todo) { L.porTipo[p.tipo][0]++; L.ok++; }
+  if (!gran) { E.stats[p.tipo][1]++; if (todo) { E.stats[p.tipo][0]++; E.puntos += (L.intentos === 0 && L.intentosPista === 0) ? 10 : 5; } guardar(); }
+  const ultima = L.i === c.preguntas.length - 1;
+  let titulo, clase;
+  if (todo) { titulo = '¡Buena deducción!'; clase = 'good'; }
+  else if (respOk) { titulo = 'Respuesta correcta, pero la pista era otra'; clase = 'soft'; }
+  else { titulo = 'Esta vez no'; clase = 'bad'; }
+  L.panel = gran
+    ? `<div class="fb neutral"><b>Respuesta guardada</b><p>En el gran caso no hay ayudas. Verás tus resultados al final.</p></div>`
+    : `<div class="fb ${clase}"><b>${titulo}</b><p>La respuesta es <b>${'ABC'[p.ok]}. ${p.opciones[p.ok]}</b>. ${p.explica}</p><p class="small">Las frases marcadas en el texto son la pista.</p></div>`;
+  L.panel += `<button class="btn" onclick="${ultima ? 'finLectura()' : 'sigPregunta()'}">${ultima ? 'Ver resultado' : 'Siguiente pregunta'}</button>`;
+  L.fase = 'fb'; pintarL();
+  if (gran) document.querySelectorAll('.fr').forEach(s => s.classList.remove('clue'));
+}
+function sigPregunta() { L.i++; L.fase = 'resp'; L.intentos = 0; L.intentosPista = 0; L.resp = null; pintarL(); }
+function finLectura() {
+  const c = CASOS[L.id], n = c.preguntas.length;
+  if (L.id !== 'gran') {
+    E.hechos[L.id] = true; E.resultados[L.id] = { ok: L.ok, total: n }; E.puntos += 20; guardar();
+    const ins = { c2: 'Lupa de bronce 🥉', c3: 'Lupa de plata 🥈', c4: 'Lupa de oro 🥇' }[L.id];
+    final(`¡${NOMBRES[L.id].split(' · ')[0]} resuelto!`, `Acertaste respuesta y pista en <b>${L.ok} de ${n}</b> preguntas. ${L.ok >= 4 ? 'Vas muy bien.' : 'Revisa en «Mi progreso» qué tipo de pista te costó más.'}`, `Ganaste la ${ins}`);
+    return;
+  }
+  E.intentosGran++;
+  const paso = L.ok >= 6;
+  E.gran = { ok: L.ok, total: n, paso, fecha: new Date().toLocaleDateString('es-CO'), porTipo: L.porTipo };
+  E.resultados.gran = { ok: L.ok, total: n };
+  if (paso) { E.hechos.gran = true; E.puntos += 50; }
+  guardar();
+  if (paso) return certificado();
+  const peor = Object.keys(L.porTipo).sort((a, b) => (L.porTipo[a][0] / L.porTipo[a][1]) - (L.porTipo[b][0] / L.porTipo[b][1]))[0];
+  final('Todavía no, detective', `Lograste <b>${L.ok} de ${n}</b>. Necesitas 6. Lo que más te costó: <b>${TIPOS[peor]}</b>. Repasa el Caso 1 y uno de los casos de práctica, y vuelve a intentarlo: el gran caso no se cierra.`, 'Puedes intentarlo otra vez', true);
+}
+
+// ---------- Pantallas de cierre ----------
+function final(t, txt, sello, repasar) {
+  arriba();
+  app().innerHTML = `<main class="screen center">${barra('Resultado', '⭐ ' + E.puntos)}
+    <div class="big-emoji">${repasar ? '🧐' : '🎉'}</div><h2>${t}</h2><p>${txt}</p><div class="badge">${sello}</div>
+    ${repasar ? '<button class="btn ghost" onclick="caso1(-1,0)">Repasar la fórmula detective</button>' : ''}
+    <button class="btn" onclick="irLibreta()">Volver a la libreta</button></main>`;
+}
+function certificado() {
+  arriba();
+  const g = E.gran;
+  app().innerHTML = `<main class="screen center">${barra('Certificado', '⭐ ' + E.puntos)}
+    <div class="cert"><div class="seal">🔍</div><p class="small">Detectives de la Lectura certifica que</p>
+    <h2>${esc(E.nombre)}</h2><p>resolvió <b>El gran caso</b> con <b>${g.ok} de ${g.total}</b> respuestas y pistas correctas.</p>
+    <p class="small">Infiere información implícita y la justifica con una pista del texto.</p><p class="small">${g.fecha}</p></div>
+    <p class="small">Muéstrale esta pantalla a tu profe.</p>
+    <button class="btn" onclick="progreso()">Ver mi progreso</button></main>`;
+}
+
+// ---------- Mi progreso ----------
+function pct(a) { return a[1] ? Math.round(a[0] / a[1] * 100) : 0; }
+function progreso() {
+  callar(); arriba();
+  const tipos = ['C', 'I', 'V'];
+  const conDatos = tipos.filter(t => E.stats[t][1] > 0);
+  const peor = conDatos.sort((a, b) => pct(E.stats[a]) - pct(E.stats[b]))[0];
+  const ins = [['c2', '🥉', 'Lupa de bronce'], ['c3', '🥈', 'Lupa de plata'], ['c4', '🥇', 'Lupa de oro'], ['gran', '📜', 'Certificado']];
+  app().innerHTML = `<main class="screen">${barra('Mi progreso', '⭐ ' + E.puntos, false)}
+    <h2>Así vas, ${AVATARES[E.avatar].e} ${esc(E.nombre)}</h2>
+    <div class="badges">${ins.map(([id, e, n]) => `<div class="bd${E.hechos[id] ? ' got' : ''}"><span>${e}</span>${n}</div>`).join('')}</div>
+    <div class="card"><b>Aciertos por tipo de pista</b>
+      ${tipos.map(t => `<div class="row"><span>${TIPOS[t]}</span><span>${E.stats[t][0]}/${E.stats[t][1]}</span></div><div class="prog thin"><i style="width:${pct(E.stats[t])}%"></i></div>`).join('')}
+      <p class="small">${!peor ? 'Resuelve los casos 2 a 4 para ver tus aciertos.' : pct(E.stats[peor]) >= 80 ? '🏅 ¡Dominas los tres tipos de pista!' : `📌 Te conviene repasar: <b>${TIPOS[peor]}</b>.`}</p></div>
+    <details class="card"><summary><b>📋 Informe para mi profe</b></summary>
+      <p>Nombre: <b>${esc(E.nombre)}</b></p>
+      <p>Exploración (Caso 0): ${E.resultados.c0 ? `${E.resultados.c0.ok}/${E.resultados.c0.total}` : 'pendiente'}</p>
+      ${['c2', 'c3', 'c4'].map(id => `<p>${NOMBRES[id].split(' · ')[0]}: ${E.resultados[id] ? `${E.resultados[id].ok}/${E.resultados[id].total}` : 'pendiente'}</p>`).join('')}
+      <p>El gran caso: ${E.gran ? `${E.gran.ok}/8 · ${E.gran.paso ? 'LOGRADO' : 'en proceso'} · intentos: ${E.intentosGran} · ${E.gran.fecha}` : 'pendiente'}</p>
+    </details>
+    <button class="btn ghost" onclick="reiniciar()">Empezar de nuevo (otro estudiante)</button>
+    <nav class="tabs"><button onclick="irLibreta()">📒 Casos</button><button class="on">📊 Mi progreso</button><button onclick="ayuda()">❓ Ayuda</button></nav></main>`;
+}
+function reiniciar() {
+  if (!confirmarSuave()) return;
+  E = nuevo(); guardar(); bienvenida();
+}
+let confirmando = false;
+function confirmarSuave() { if (confirmando) { confirmando = false; return true; } confirmando = true; aviso('Toca otra vez para borrar todo el progreso'); setTimeout(() => confirmando = false, 3000); return false; }
+
+// ---------- Ayuda ----------
+function ayuda() {
+  callar(); arriba();
+  app().innerHTML = `<main class="screen">${barra('Ayuda', '⭐ ' + E.puntos, false)}
+    <h2>¿Cómo se juega?</h2>
+    <ol class="help"><li>Resuelve los casos en orden: cada uno abre el siguiente.</li>
+    <li>En los casos de lectura, primero <b>lee el texto</b> (puedes escucharlo con 🔊).</li>
+    <li>Elige tu respuesta. Si fallas, tienes una segunda oportunidad con ayuda.</li>
+    <li>Luego <b>toca la frase del texto</b> que demuestra tu respuesta: esa es tu pista.</li>
+    <li>En «Mi progreso» ves tus insignias y qué tipo de pista debes repasar.</li>
+    <li>En <b>El gran caso</b> no hay ayudas. Con 6 de 8 ganas tu certificado.</li></ol>
+    ${formula()}
+    <p class="small">Tu avance se guarda en este celular. La app funciona sin internet después de abrirla la primera vez.</p>
+    <nav class="tabs"><button onclick="irLibreta()">📒 Casos</button><button onclick="progreso()">📊 Mi progreso</button><button class="on">❓ Ayuda</button></nav></main>`;
+}
+
+// ---------- Instalación (PWA) ----------
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; pintarInstalar(); });
+function pintarInstalar() {
+  const box = $('#instalar'); if (!box) return;
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  if (standalone) { box.innerHTML = ''; return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (promptInstalar) box.innerHTML = '<button class="btn ghost" onclick="instalar()">📲 Instalar la app en este celular</button>';
+  else if (ios) box.innerHTML = '<p class="small">📲 Para instalarla: toca <b>Compartir</b> y luego <b>Agregar a inicio</b>.</p>';
+  else box.innerHTML = '<p class="small">📲 Puedes instalarla desde el menú del navegador: <b>Agregar a la pantalla principal</b>.</p>';
+}
+function instalar() { if (!promptInstalar) return; promptInstalar.prompt(); promptInstalar.userChoice.finally(() => { promptInstalar = null; pintarInstalar(); }); }
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+// ---------- Arranque ----------
+if (E.nombre) irLibreta(); else bienvenida();
+
+</script>
+</body>
+</html>
